@@ -2,7 +2,6 @@ import logging
 import gspread
 import asyncio
 import os
-import json
 from keep_alive import keep_alive
 from oauth2client.service_account import ServiceAccountCredentials
 from telegram import Update
@@ -12,13 +11,13 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, fil
 SHEET_ID = '1bntOQ6pR2-ynu4KO9s8rpESnW4-TcN_3U_cdNWazz2A'
 BOT_TOKEN = '8081366117:AAHYQOXrcxQmgdab1sQFRqIz4xCr3Xgf_ps'
 
-# 🔐 Conexión segura con Google Sheets desde variable de entorno
+# 🔐 Conexión segura con Google Sheets usando archivo secreto
 scope = [
     'https://spreadsheets.google.com/feeds',
     'https://www.googleapis.com/auth/drive'
 ]
-json_keyfile_dict = json.loads(os.environ["GOOGLE_SERVICE_JSON"])
-creds = ServiceAccountCredentials.from_json_keyfile_dict(json_keyfile_dict, scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name(
+    "/etc/secrets/bot-3xwin-fb5a928147e0.json", scope)
 client = gspread.authorize(creds)
 sheet = client.open_by_key(SHEET_ID).worksheet("Respuestas")
 
