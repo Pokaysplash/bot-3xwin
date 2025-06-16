@@ -9,7 +9,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, fil
 
 # 🔐 Configuraciones
 SHEET_ID = '1bntOQ6pR2-ynu4KO9s8rpESnW4-TcN_3U_cdNWazz2A'
-BOT_TOKEN = '8081366117:AAHYQOXrcxQmgdab1sQFRqIz4xCr3Xgf_ps'
+BOT_TOKEN = os.environ["BOT_TOKEN"]
 
 # 🔐 Conexión segura con Google Sheets usando archivo secreto
 scope = [
