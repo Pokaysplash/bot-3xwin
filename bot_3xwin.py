@@ -2,6 +2,7 @@ import logging
 import gspread
 import asyncio
 import os
+import json
 from keep_alive import keep_alive
 from oauth2client.service_account import ServiceAccountCredentials
 from telegram import Update
@@ -11,13 +12,13 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, fil
 SHEET_ID = '1bntOQ6pR2-ynu4KO9s8rpESnW4-TcN_3U_cdNWazz2A'
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 
-# 🔐 Conexión segura con Google Sheets usando archivo secreto
+# 🔐 Conexión segura con Google Sheets desde secret JSON
 scope = [
     'https://spreadsheets.google.com/feeds',
     'https://www.googleapis.com/auth/drive'
 ]
-creds = ServiceAccountCredentials.from_json_keyfile_name(
-    "/etc/secrets/bot-3xwin-fb5a928147e0.json", scope)
+json_keyfile_dict = json.loads(os.environ["GOOGLE_SERVICE_JSON"])
+creds = ServiceAccountCredentials.from_json_keyfile_dict(json_keyfile_dict, scope)
 client = gspread.authorize(creds)
 sheet = client.open_by_key(SHEET_ID).worksheet("Respuestas")
 
@@ -53,32 +54,19 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text="❌ No encontramos tu código. Por favor regístrate aquí: https://www.3xwin.top/formulario.html"
             )
     except Exception as e:
-        await context.bot.send_message(
-            chat_id=chat_id,
-            text="⚠️ Error al validar tu código."
-        )
+        await context.bot.send_message(chat_id=chat_id, text="⚠️ Error al validar tu código.")
         logging.error(f"Error: {e}")
 
 # 🧠 Función principal
 async def main():
-    keep_alive()  # Mantiene vivo el bot en servicios como Replit
+    keep_alive()
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     print("🤖 Bot en ejecución...")
-    await app.initialize()
-    await app.start()
-    await app.updater.start_polling()
-    await asyncio.Event().wait()
+    await app.run_polling()
 
 # 🚀 Ejecutar
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except RuntimeError as e:
-        if "event loop is running" in str(e):
-            loop = asyncio.get_event_loop()
-            loop.create_task(main())
-        else:
-            raise
+    asyncio.run(main())
